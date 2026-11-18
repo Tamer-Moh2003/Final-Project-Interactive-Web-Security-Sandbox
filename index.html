@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ghurir Sandbox — Interactive Web Security Labs</title>
+<meta name="description" content="Three hands-on labs: Unrestricted File Upload, Race Condition and Workflow Bypass. Press a payload, see the bug, switch to the fix.">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="assets/css/style.css">
+</head>
+
+<body>
+
+<header class="nav">
+  <div class="nav-in">
+    <a class="brand" href="index.html" aria-label="Ghurir Sandbox home">
+      <svg viewBox="0 0 32 32" fill="none" aria-hidden="true">
+        <rect x="2" y="2" width="28" height="28" rx="8" fill="var(--accent)"/>
+        <path d="M9 12l5 4-5 4M17 21h6" stroke="var(--accent-ink)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      Ghurir Sandbox
+    </a>
+    <a class="link" href="lab1.html">Lab 1</a>
+    <a class="link" href="lab2.html">Lab 2</a>
+    <a class="link" href="lab3.html">Lab 3</a>
+    <button type="button" id="theme-toggle" class="theme-toggle" aria-label="Switch colour theme">Dark mode</button>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <!-- HERO -->
+  <section class="home-hero">
+    <div>
+      <h1>Break it. See it. Fix it.</h1>
+      <p class="lead">
+        Three small web apps with a real security bug in each.
+        Press a payload, watch the attack work, then switch to the fixed
+        version and press the same payload again.
+      </p>
+
+      <div class="hero-actions">
+        <a class="btn primary" href="lab1.html">Start with Lab 1 →</a>
+        <a class="btn" href="#labs">See all labs</a>
+      </div>
+
+      <div class="hero-meta">
+        <div><strong>3</strong>labs</div>
+        <div><strong>3</strong>payloads in each</div>
+        <div><strong>0</strong>real attacks</div>
+      </div>
+    </div>
+
+    <!-- Tiny live preview of the idea behind every lab -->
+    <div class="mini-demo" aria-label="Preview of a lab">
+      <div class="mini-demo-top">
+        <span>avatar upload</span>
+        <div class="switch" role="group" aria-label="Preview version">
+          <button type="button" data-demo-mode="vulnerable" aria-pressed="true" data-mode="vulnerable" class="active">Vulnerable</button>
+          <button type="button" data-demo-mode="fixed" aria-pressed="false" data-mode="fixed">Fixed</button>
+        </div>
+      </div>
+      <div class="mini-demo-body">
+        <div class="mini-payload">payload: shell.php</div>
+        <div id="demo-result" class="result" aria-live="polite"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- LABS -->
+  <section id="labs">
+    <div class="section-head">
+      <h2>The three labs</h2>
+      <p>Each lab is a self-contained simulation that runs in your browser. Start anywhere.</p>
+    </div>
+
+    <div class="lab-grid">
+
+      <article class="card lab-card">
+        <div class="icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 16V4M7 9l5-5 5 5"/><path d="M4 16v3a1 1 0 001 1h14a1 1 0 001-1v-3"/>
+          </svg>
+        </div>
+        <h2>Unrestricted File Upload</h2>
+        <div class="meta">
+          <span class="tag">CWE-434</span>
+          <span class="tag">Medium</span>
+        </div>
+        <p>A profile-picture form that trusts the file it is given. See how a disguised file gets through.</p>
+        <ul>
+          <li>Upload a normal image</li>
+          <li>Upload a script</li>
+          <li>Upload a script that pretends to be an image</li>
+        </ul>
+        <a class="btn primary" href="lab1.html">Open Lab 1 →</a>
+      </article>
+
+      <article class="card lab-card">
+        <div class="icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 7h11l-3-3M20 17H9l3 3"/>
+          </svg>
+        </div>
+        <h2>Race Condition</h2>
+        <div class="meta">
+          <span class="tag">CWE-362</span>
+          <span class="tag hard">Challenge</span>
+        </div>
+        <p>Two requests arrive at the same moment and both pass the same check. Watch a one-time coupon get used twice.</p>
+        <ul>
+          <li>Send one request</li>
+          <li>Send two at once</li>
+          <li>Send ten at once</li>
+        </ul>
+        <a class="btn primary" href="lab2.html">Open Lab 2 →</a>
+      </article>
+
+      <article class="card lab-card">
+        <div class="icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/>
+            <path d="M7 12h3M14 12h3"/>
+          </svg>
+        </div>
+        <h2>Workflow Bypass</h2>
+        <div class="meta">
+          <span class="tag">CWE-841</span>
+          <span class="tag">Medium</span>
+        </div>
+        <p>A checkout that forgets to enforce its own steps. Skip the payment and still get the order.</p>
+        <ul>
+          <li>Follow the steps in order</li>
+          <li>Jump straight to the last step</li>
+          <li>Go back and change the cart after paying</li>
+        </ul>
+        <a class="btn primary" href="lab3.html">Open Lab 3 →</a>
+      </article>
+
+    </div>
+  </section>
+
+  <!-- HOW IT WORKS -->
+  <section id="how-it-works">
+    <div class="section-head">
+      <h2>How every lab works</h2>
+      <p>The same three moves, in the same order, on every page.</p>
+    </div>
+
+    <div class="how-grid">
+      <article class="how-card">
+        <span class="how-number">1</span>
+        <h3>Read the bug</h3>
+        <p>Short code, one highlighted line. You see exactly which line causes the problem and why.</p>
+      </article>
+      <article class="how-card">
+        <span class="how-number">2</span>
+        <h3>Press a payload</h3>
+        <p>Pick a payload button on the vulnerable version and watch the effect on the simulated page.</p>
+      </article>
+      <article class="how-card">
+        <span class="how-number">3</span>
+        <h3>Switch to the fix</h3>
+        <p>Press the same payload on the fixed version. It is blocked, and you see which line stopped it.</p>
+      </article>
+    </div>
+  </section>
+
+  <!-- ANATOMY OF A LAB -->
+  <section>
+    <div class="section-head">
+      <h2>What is on each lab page</h2>
+    </div>
+
+    <ol class="anatomy">
+      <li><strong>What it is</strong>Plain English, with the OWASP category and CWE.</li>
+      <li><strong>The line</strong>Realistic code with the buggy line highlighted.</li>
+      <li><strong>Try it</strong>Payload buttons and a live simulation.</li>
+      <li><strong>Why it matters</strong>The damage, and a real incident when we found one.</li>
+      <li><strong>The fix</strong>Fixed code, with the same payload now blocked.</li>
+      <li><strong>Sources</strong>Where to read more.</li>
+    </ol>
+  </section>
+
+  <!-- TEAM -->
+  <section>
+    <div class="section-head">
+      <h2>The team</h2>
+      <p>42 Amman / 42 Irbid final project.</p>
+    </div>
+
+    <div class="team">
+      <div class="member"><strong>Dana Altaweel</strong></div>
+      <div class="member"><strong>Abd Alhade Ahmad</strong></div>
+      <div class="member"><strong>Tamer Mohammad</strong></div>
+      <div class="member"><strong>Rand Mahmoud</strong></div>
+      <div class="member"><strong>Marwoh Barakat</strong></div>
+    </div>
+  </section>
+
+  <section class="home-note">
+    <p>
+      <strong>Safe by design.</strong>
+      Everything here is a simulation in your browser. No file is uploaded,
+      no server is contacted, and no real website is attacked.
+    </p>
+  </section>
+
+</main>
+
+<footer>
+  <strong>Ghurir Sandbox</strong>
+  <p>Interactive web security labs. Learn the bug, see the damage, apply the fix.</p>
+  <p>42 Amman / 42 Irbid — Final Project, November 2026</p>
+</footer>
+
+<script src="assets/js/common.js"></script>
+<script src="assets/js/home.js"></script>
+</body>
+</html>
