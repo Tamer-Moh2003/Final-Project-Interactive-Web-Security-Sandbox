@@ -3,13 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Lab 2 — Race Condition | Ghurir Sandbox</title>
+<title>Lab 2 — Predictable Reset Tokens | Ghurir Sandbox</title>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap">
 <link rel="stylesheet" href="assets/css/style.css">
-<!-- Lab-only styles live here so teammates do not collide in git -->
 <link rel="stylesheet" href="assets/css/lab2.css">
 </head>
 
@@ -34,73 +33,47 @@
 <main class="wrap">
 <div class="col">
 
-  <!-- ===== TEMPLATE NOTICE: delete this whole box when the lab is finished ===== -->
-  <div class="todo-box">
-    <p><strong>Lab template.</strong> Delete every dashed box like this one when the lab is done.</p>
-    <ul>
-      <li>Fill the six sections below (max 400 words, not counting code).</li>
-      <li>Implement the lab logic in <code>assets/js/lab2.js</code> (the logic contract is at the top of that file).</li>
-      <li>The same payload must be blocked on the Fixed version.</li>
-    </ul>
-  </div>
-
   <div class="lab-head">
-    <h1>Race Condition</h1>
-    <p class="lead todo-text">One sentence that tells a beginner what they will see in this lab.</p>
-    <span class="tag">OWASP: TODO</span>
-    <span class="tag">CWE-362</span>
-    <span class="tag">Challenge</span>
-    <span class="tag">Owner: TODO</span>
+    <h1>Predictable Reset Tokens</h1>
+    <p class="lead">See how a password-reset token built from public information can be guessed, then compare it with a secure reset flow.</p>
+    <span class="tag">OWASP A07:2025</span>
+    <span class="tag">CWE-640</span>
+    <span class="tag">CWE-340</span>
+    <span class="tag hard">Challenge</span>
   </div>
 
-  <!-- ===== 1. WHAT IT IS ===== -->
   <section class="sec" id="what">
     <span class="sec-n">1. What it is</span>
-    <h2>What is Race Condition?</h2>
-
-    <div class="todo-box">
-      <p><strong>Write max 3 sentences.</strong> Name the OWASP category and the CWE.</p>
-      <ul>
-        <li>Explain that two requests can run at the same time and both read the same old value.</li>
-        <li>Name the OWASP category (suggested: A04:2021 Insecure Design — verify it) and CWE-362.</li>
-        <li>Use the words check-then-act: the app checks a value, then updates it a moment later.</li>
-      </ul>
+    <h2>When a reset token is predictable</h2>
+    <p>A reset token is a temporary secret that proves a password-reset request is authorized. If an application builds it from guessable data such as a user ID and date, someone who knows that pattern may be able to create a valid reset link and take over the account.</p>
+    <div class="why">
+      <strong>Safe simulation:</strong>
+      This lab uses made-up accounts and tokens in your browser. It does not send email, contact a server, or change a real password.
     </div>
-
-    <p class="todo-text">Sentence 1: what the bug is.</p>
-    <p class="todo-text">Sentence 2: how it happens.</p>
-    <p class="todo-text">Sentence 3: what the attacker gets.</p>
   </section>
 
-  <!-- ===== 2. THE LINE ===== -->
   <section class="sec" id="line">
     <span class="sec-n">2. The line</span>
-    <h2>The vulnerable code</h2>
+    <h2>The predictable code</h2>
+    <p>The vulnerable example derives the token from values that are already known or easy to discover.</p>
 
-    <div class="todo-box">
-      <p><strong>Show 8–15 lines of realistic code.</strong> Highlight only the one line that causes the bug (class <code>ln bad</code>).</p>
-      <p>Suggested scenario: redeem a single-use coupon: <em>read uses_left</em>, <em>if &gt; 0</em>, <em>write uses_left - 1</em>, <em>grant discount</em>.</p>
-    </div>
-
-    <pre class="code"><span class="ln">// TODO: line 1 of 8-15</span>
-<span class="ln">// TODO: line 2</span>
-<span class="ln">// TODO: line 3</span>
-<span class="ln">// TODO: line 4</span>
-<span class="ln bad">// TODO: the ONE line that causes the bug</span>
-<span class="ln">// TODO: line 6</span>
-<span class="ln">// TODO: line 7</span>
-<span class="ln">// TODO: line 8</span></pre>
+    <pre class="code"><span class="ln">function createResetToken(user, day) {</span>
+<span class="ln">  // The account ID and date are not secret.</span>
+<span class="ln bad">  const token = user.id + "-" + day;</span>
+<span class="ln">  saveResetToken(user.id, token);</span>
+<span class="ln">  sendResetLink(user.email, token);</span>
+<span class="ln">  return token;</span>
+<span class="ln">}</span></pre>
 
     <div class="why">
       <strong>Why is this line dangerous?</strong>
-      <p class="todo-text">One or two sentences. Point at the highlighted line.</p>
+      Anyone who can infer the account ID and reset date can reproduce the same value. A reset link should depend on an unpredictable secret, not public account details.
     </div>
   </section>
 
-  <!-- ===== 3. TRY IT ===== -->
   <section class="sec try" id="try">
     <span class="sec-n">3. Try it</span>
-    <h2>Try the attack</h2>
+    <h2>Try to predict the reset link</h2>
 
     <h3>Step 1: choose a version</h3>
     <div class="switch" role="group" aria-label="Code version">
@@ -109,11 +82,11 @@
     </div>
     <p id="mode-description" class="why"></p>
 
-    <h3>Step 2: press a payload</h3>
+    <h3>Step 2: choose a token attempt</h3>
     <div class="payloads">
-      <button type="button" class="btn" data-payload="one" aria-pressed="false">1 request</button>
-      <button type="button" class="btn" data-payload="two" aria-pressed="false">2 requests at once</button>
-      <button type="button" class="btn" data-payload="ten" aria-pressed="false">10 requests at once</button>
+      <button type="button" class="btn" data-payload="predict" aria-pressed="false">Build token from the public user ID</button>
+      <button type="button" class="btn" data-payload="replay" aria-pressed="false">Reuse the sample token</button>
+      <button type="button" class="btn" data-payload="random" aria-pressed="false">Try an unrelated guess</button>
     </div>
 
     <h3>Step 3: see what happens</h3>
@@ -121,35 +94,43 @@
       <div class="sim-browser">
         <div class="sim-browser-top">
           <span class="sim-dot"></span><span class="sim-dot"></span><span class="sim-dot"></span>
-          <div class="sim-address" id="sim-address">https://trusted-site.test/coupon/redeem</div>
+          <div class="sim-address" id="sim-address">https://trusted-site.test/account/reset-password</div>
         </div>
         <div class="sim-browser-content">
-
           <div class="state-row">
-            <div class="state-box"><small>Coupon uses left</small><strong id="state-uses">1</strong></div>
-            <div class="state-box"><small>Discounts granted</small><strong id="state-granted">0</strong></div>
-            <div class="state-box"><small>Lock</small><strong id="state-lock">off</strong></div>
+            <div class="state-box">
+              <small>Target account</small>
+              <strong id="target-account" class="token-value">—</strong>
+            </div>
+            <div class="state-box">
+              <small>Observed sample token</small>
+              <strong id="observed-token" class="token-value">—</strong>
+            </div>
+            <div class="state-box">
+              <small>Token design</small>
+              <strong id="token-design" class="token-value">—</strong>
+            </div>
           </div>
 
-          <!-- JS clones this template once per request and fills #lanes -->
-          <div class="lanes" id="lanes" aria-live="polite"></div>
-
-          <template id="lane-template">
-            <div class="lane">
-              <h4>Request</h4>
-              <ol>
-                <li data-step="lock">LOCK coupon (Fixed only)</li>
-                <li data-step="read">READ uses_left</li>
-                <li data-step="check">CHECK uses_left &gt; 0</li>
-                <li data-step="write">WRITE uses_left = uses_left - 1</li>
-                <li data-step="grant">GRANT discount</li>
-              </ol>
+          <div class="state-row">
+            <div class="state-box">
+              <small>Submitted token</small>
+              <strong id="submitted-token" class="token-value">—</strong>
             </div>
-          </template>
+            <div class="state-box">
+              <small>Reset outcome</small>
+              <strong id="reset-outcome" class="token-value">—</strong>
+            </div>
+          </div>
 
+          <div class="stepper" id="reset-steps" aria-label="Reset token checks">
+            <div class="step" data-step="observe">Observe sample<small>waiting</small></div>
+            <div class="step" data-step="predict">Build a candidate<small>waiting</small></div>
+            <div class="step" data-step="validate">Validate token<small id="validation-label">waiting</small></div>
+          </div>
 
           <div class="sim-status" id="sim-status" aria-live="polite">Waiting for a payload...</div>
-          <p class="sim-explanation" id="sim-explanation">Press a payload to see how the application handles it.</p>
+          <p class="sim-explanation" id="sim-explanation">Choose a token attempt to see how the reset flow handles it.</p>
         </div>
       </div>
     </div>
@@ -157,67 +138,47 @@
     <div id="result" class="result" aria-live="polite"></div>
   </section>
 
-  <!-- ===== 4. WHY IT MATTERS ===== -->
   <section class="sec" id="why">
     <span class="sec-n">4. Why it matters</span>
     <h2>Why does it matter?</h2>
-
-    <div class="todo-box">
-      <p><strong>Explain the damage in plain English.</strong> Add one real incident if you can (a source is preferred, not required).</p>
-      <ul>
-        <li>Search for real incidents of race conditions used for double-spending or repeated coupon use. Link a source.</li>
-        <li>Explain the damage: free money, repeated discounts, inventory going negative.</li>
-      </ul>
-    </div>
-
-    <p class="todo-text">The damage, in two or three sentences.</p>
+    <p>A valid reset link can let its holder choose a new password without knowing the old one. If the token is predictable, an attacker may use the recovery flow to gain control of another account.</p>
     <div class="why">
-      <strong>Real incident:</strong>
-      <span class="todo-text">Name it, say what happened, and link the source in section 6. Only write what the source actually says.</span>
+      The risk comes from treating a recoverable account link as a secret while generating it from information that is not secret.
     </div>
   </section>
 
-  <!-- ===== 5. THE FIX ===== -->
   <section class="sec" id="fix">
     <span class="sec-n">5. The fix</span>
-    <h2>The fixed code</h2>
+    <h2>Generate a strong, short-lived token</h2>
+    <p>Use a cryptographically secure random generator. Store a hash of the token, bind it to the correct account, expire it, and invalidate it after one successful use.</p>
 
-    <div class="todo-box">
-      <p><strong>Show the fixed code.</strong> Highlight the line that fixes it (class <code>ln good</code>).</p>
-      <ul>
-        <li>Make check-and-update one atomic step (for example a single conditional update).</li>
-        <li>Or lock the coupon so only one request can touch it at a time.</li>
-        <li>Show which line makes the second request fail.</li>
-      </ul>
-    </div>
-
-    <pre class="code"><span class="ln">// TODO: same code as section 2, with the fix applied</span>
-<span class="ln">// TODO</span>
-<span class="ln">// TODO</span>
-<span class="ln">// TODO</span>
-<span class="ln good">// TODO: the line that fixes the bug</span>
-<span class="ln">// TODO</span>
-<span class="ln">// TODO</span>
-<span class="ln">// TODO</span></pre>
+    <pre class="code"><span class="ln">function createResetToken(user) {</span>
+<span class="ln good">  const token = randomBytes(32).toString("base64url");</span>
+<span class="ln">  storeHash(user.id, sha256(token), {</span>
+<span class="ln">    expiresIn: "15 minutes",</span>
+<span class="ln">    singleUse: true</span>
+<span class="ln">  });</span>
+<span class="ln">  sendResetLink(user.email, token);</span>
+<span class="ln">}</span></pre>
 
     <div class="why">
       <strong>Why does the fix work?</strong>
-      <p class="todo-text">One or two sentences.</p>
+      The token no longer comes from a guessable formula. Expiration and single-use validation also limit how long a leaked or reused link can work.
     </div>
 
-    <h3>Test the same payload again</h3>
-    <p>
-      <a href="#try">Go back to Try it</a>, switch to <strong>Fixed</strong>
-      and press the same payload. The result should now be blocked.
-    </p>
+    <h3>Try the same attempt again</h3>
+    <p><a href="#try">Go back to Try it</a>, switch to <strong>Fixed</strong>, and try the same token attempt. The simulated reset should be refused.</p>
   </section>
 
-  <!-- ===== 6. SOURCES ===== -->
   <section class="sec" id="sources">
     <span class="sec-n">6. Sources</span>
     <h2>Sources</h2>
     <ul>
-      <li class="todo-text">TODO: add sources (MITRE CWE page, OWASP page, incident report). Preferred, not required.</li>
+      <li><a href="https://cheatsheetseries.owasp.org/cheatsheets/Forgot_Password_Cheat_Sheet.html" target="_blank" rel="noopener noreferrer">OWASP Forgot Password Cheat Sheet</a></li>
+      <li><a href="https://wstg.owasp.org/latest/4-Web_Application_Security_Testing/04-Authentication/09-Weak_Password_Change_or_Reset_Functionalities/" target="_blank" rel="noopener noreferrer">OWASP Web Security Testing Guide: Password Reset</a></li>
+      <li><a href="https://cwe.mitre.org/data/definitions/640.html" target="_blank" rel="noopener noreferrer">MITRE CWE-640: Weak Password Recovery Mechanism</a></li>
+      <li><a href="https://cwe.mitre.org/data/definitions/340.html" target="_blank" rel="noopener noreferrer">MITRE CWE-340: Generation of Predictable Numbers or Identifiers</a></li>
+      <li><a href="https://top10.owasp.org/2025/A07_2025-Authentication_Failures/" target="_blank" rel="noopener noreferrer">OWASP Top 10:2025 A07 Authentication Failures</a></li>
     </ul>
   </section>
 
@@ -230,7 +191,7 @@
 </main>
 
 <footer>
-  <p>Every demonstration is a safe simulation. Nothing is uploaded and no real site is attacked.</p>
+  <p>Every demonstration is a safe simulation. Nothing is sent and no real account is changed.</p>
   <p>Ghurir Sandbox — Interactive Web Security Labs</p>
 </footer>
 
@@ -238,3 +199,4 @@
 <script src="assets/js/lab2.js"></script>
 </body>
 </html>
+

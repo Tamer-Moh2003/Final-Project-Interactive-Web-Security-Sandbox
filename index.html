@@ -105,16 +105,16 @@
             <path d="M4 7h11l-3-3M20 17H9l3 3"/>
           </svg>
         </div>
-        <h2>Race Condition</h2>
+        <h2>Predictable Reset Tokens</h2>
         <div class="meta">
-          <span class="tag">CWE-362</span>
+          <span class="tag">CWE-640</span><span class="tag">CWE-340</span>
           <span class="tag hard">Challenge</span>
         </div>
-        <p>Two requests arrive at the same moment and both pass the same check. Watch a one-time coupon get used twice.</p>
+        <p>A predictable reset token can turn public account details into a password-reset link. See the weak pattern and compare it with a secure token.</p>
         <ul>
-          <li>Send one request</li>
-          <li>Send two at once</li>
-          <li>Send ten at once</li>
+          <li>Inspect a sample reset token</li>
+          <li>Predict a token from public data</li>
+          <li>Compare weak and secure token designs</li>
         </ul>
         <a class="btn primary" href="lab2.html">Open Lab 2 →</a>
       </article>
