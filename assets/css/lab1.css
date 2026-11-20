@@ -1,1 +1,70 @@
-/* Lab 1 — Unrestricted File Upload: lab-only styles. Edit freely; shared styles are in style.css. */
+.office-panel {
+  display: grid;
+  gap: .8rem;
+  margin-top: 1.5rem;
+}
+
+.office-panel h3,
+.office-panel p {
+  margin: 0;
+}
+
+.office-files {
+  display: grid;
+  gap: .5rem;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.office-files li {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: .5rem;
+  border: 1px solid currentColor;
+  border-radius: .5rem;
+  padding: .6rem .85rem;
+  transition: background-color .25s, color .25s;
+}
+
+.office-files code {
+  overflow-wrap: anywhere;
+}
+
+.office-files .locked,
+.incident-warning {
+  color: #ffdadc;
+  background-color: #581c26;
+}
+
+.office-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .5rem;
+}
+
+.office-actions button:disabled {
+  opacity: .55;
+  cursor: default;
+}
+
+.incident-warning {
+  border: 2px solid #ff8a94;
+  border-radius: .5rem;
+  padding: 1rem;
+}
+
+.incident-warning p {
+  margin-top: .4rem;
+}
+
+#incident-timeline {
+  margin: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .office-files li {
+    transition: none;
+  }
+}

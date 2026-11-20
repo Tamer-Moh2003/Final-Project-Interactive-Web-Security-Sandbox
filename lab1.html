@@ -34,185 +34,97 @@
 <main class="wrap">
 <div class="col">
 
-  <!-- ===== TEMPLATE NOTICE: delete this whole box when the lab is finished ===== -->
-  <div class="todo-box">
-    <p><strong>Lab template.</strong> Delete every dashed box like this one when the lab is done.</p>
-    <ul>
-      <li>Fill the six sections below (max 400 words, not counting code).</li>
-      <li>Implement the lab logic in <code>assets/js/lab1.js</code> (the logic contract is at the top of that file).</li>
-      <li>The same payload must be blocked on the Fixed version.</li>
-    </ul>
-  </div>
 
   <div class="lab-head">
     <h1>Unrestricted File Upload</h1>
-    <p class="lead todo-text">One sentence that tells a beginner what they will see in this lab.</p>
-    <span class="tag">OWASP: TODO</span>
+    <p class="lead">The Infected Office · Test the Supplier Upload Portal and see how file validation stops a simulated incident.</p>
+    <span class="tag">OWASP A06:2025 · Insecure Design</span>
     <span class="tag">CWE-434</span>
-    <span class="tag">Medium</span>
-    <span class="tag">Owner: TODO</span>
   </div>
 
-  <!-- ===== 1. WHAT IT IS ===== -->
   <section class="sec" id="what">
-    <span class="sec-n">1. What it is</span>
-    <h2>What is Unrestricted File Upload?</h2>
-
-    <div class="todo-box">
-      <p><strong>Write max 3 sentences.</strong> Name the OWASP category and the CWE.</p>
-      <ul>
-        <li>Explain that the site lets users upload a file but does not properly check what kind of file it is.</li>
-        <li>Name the OWASP category (suggested: A04:2021 Insecure Design — verify it on owasp.org) and CWE-434.</li>
-        <li>Say what the attacker gains when a script is stored where the server can run it.</li>
-      </ul>
-    </div>
-
-    <p class="todo-text">Sentence 1: what the bug is.</p>
-    <p class="todo-text">Sentence 2: how it happens.</p>
-    <p class="todo-text">Sentence 3: what the attacker gets.</p>
+    <h2>What is unrestricted file upload?</h2>
+    <p>A portal has unrestricted file upload (CWE-434) when it accepts dangerous file types its workflow should reject. Here, missing upload rules make it an example of OWASP A06:2025 Insecure Design. Unsafe processing after acceptance can turn a bad upload into a wider incident.</p>
   </section>
 
-  <!-- ===== 2. THE LINE ===== -->
   <section class="sec" id="line">
-    <span class="sec-n">2. The line</span>
-    <h2>The vulnerable code</h2>
-
-    <div class="todo-box">
-      <p><strong>Show 8–15 lines of realistic code.</strong> Highlight only the one line that causes the bug (class <code>ln bad</code>).</p>
-      <p>Suggested scenario: an avatar-upload handler that only trusts the <em>Content-Type</em> sent by the browser.</p>
-    </div>
-
-    <pre class="code"><span class="ln">// TODO: line 1 of 8-15</span>
-<span class="ln">// TODO: line 2</span>
-<span class="ln">// TODO: line 3</span>
-<span class="ln">// TODO: line 4</span>
-<span class="ln bad">// TODO: the ONE line that causes the bug</span>
-<span class="ln">// TODO: line 6</span>
-<span class="ln">// TODO: line 7</span>
-<span class="ln">// TODO: line 8</span></pre>
-
-    <div class="why">
-      <strong>Why is this line dangerous?</strong>
-      <p class="todo-text">One or two sentences. Point at the highlighted line.</p>
-    </div>
+    <h2>Vulnerable logic</h2>
+    <pre class="code" id="vulnerable-code"></pre>
+    <p>The highlighted line accepts a fictional record without checking it against the portal policy.</p>
   </section>
 
-  <!-- ===== 3. TRY IT ===== -->
   <section class="sec try" id="try">
-    <span class="sec-n">3. Try it</span>
-    <h2>Try the attack</h2>
-
-    <h3>Step 1: choose a version</h3>
-    <div class="switch" role="group" aria-label="Code version">
-      <button type="button" data-mode="vulnerable" class="active" aria-pressed="true">Vulnerable</button>
+    <h2>Supplier Upload Portal</h2>
+    <div class="switch" role="group" aria-label="Upload policy">
+      <button type="button" data-mode="vulnerable" aria-pressed="true">Vulnerable</button>
       <button type="button" data-mode="fixed" aria-pressed="false">Fixed</button>
     </div>
-    <p id="mode-description" class="why"></p>
+    <p class="why" id="mode-description"></p>
 
-    <h3>Step 2: press a payload</h3>
+    <h3>Choose a sample file</h3>
     <div class="payloads">
-      <button type="button" class="btn" data-payload="legit" aria-pressed="false">photo.png (normal image)</button>
-      <button type="button" class="btn" data-payload="php" aria-pressed="false">shell.php (script)</button>
-      <button type="button" class="btn" data-payload="spoof" aria-pressed="false">shell.php with a fake image type</button>
+      <button type="button" class="btn" data-payload="executable" aria-pressed="false">invoice.exe</button>
+      <button type="button" class="btn" data-payload="doubleExtension" aria-pressed="false">invoice.pdf.exe</button>
+      <button type="button" class="btn" data-payload="mismatch" aria-pressed="false">product-image.jpg</button>
+      <button type="button" class="btn" data-payload="valid" aria-pressed="false">catalog.pdf (valid sample)</button>
     </div>
-
-    <h3>Step 3: see what happens</h3>
     <div class="simulation">
       <div class="sim-browser">
-        <div class="sim-browser-top">
-          <span class="sim-dot"></span><span class="sim-dot"></span><span class="sim-dot"></span>
-          <div class="sim-address" id="sim-address">https://trusted-site.test/profile/avatar</div>
-        </div>
         <div class="sim-browser-content">
-
           <div class="file-card">
-            <div><small>File name</small><code id="up-filename">—</code></div>
-            <div><small>Type declared by the browser</small><code id="up-mime">—</code></div>
-            <div><small>Real content (first bytes)</small><code id="up-magic">—</code></div>
+            <div><small>Sample filename</small><code id="up-filename">—</code></div>
+            <div><small>Simulated content format</small><code id="up-format">—</code></div>
           </div>
-
-          <!-- One row per server check. JS sets the pill to: pass | fail | skip -->
           <ul class="checks">
-            <li>Extension is on the allowlist <span class="pill" id="check-ext">waiting</span></li>
-            <li>Declared type is an image <span class="pill" id="check-mime">waiting</span></li>
-            <li>Real content matches an image <span class="pill" id="check-magic">waiting</span></li>
-            <li>File renamed to a random name <span class="pill" id="check-rename">waiting</span></li>
+            <li>Allowed extension <span class="pill" id="check-extension">Waiting</span></li>
+            <li>Single extension <span class="pill" id="check-name">Waiting</span></li>
+            <li>Content matches format <span class="pill" id="check-format">Waiting</span></li>
           </ul>
-
-          <p>Stored as: <code id="up-stored">—</code></p>
-          <p>Could the server run it? <strong id="up-exec">—</strong></p>
-
-
-          <div class="sim-status" id="sim-status" aria-live="polite">Waiting for a payload...</div>
-          <p class="sim-explanation" id="sim-explanation">Press a payload to see how the application handles it.</p>
+          <div id="result" class="result" role="status"></div>
         </div>
       </div>
     </div>
 
-    <div id="result" class="result" aria-live="polite"></div>
+    <div class="office-panel">
+      <h3>Company files</h3>
+      <p id="incident-count" role="status"></p>
+      <ul id="office-files" class="office-files">
+        <li><code>supplier-contacts.pdf</code><span>Available</span></li>
+        <li><code>purchase-orders.pdf</code><span>Available</span></li>
+        <li><code>inventory-report.pdf</code><span>Available</span></li>
+        <li><code>delivery-schedule.pdf</code><span>Available</span></li>
+      </ul>
+      <div class="office-actions">
+        <button type="button" class="btn primary" id="simulate-processing" disabled>Simulate Unsafe Processing</button>
+        <button type="button" class="btn" id="reset-incident">Reset Incident</button>
+      </div>
+      <div class="incident-warning" id="incident-warning" hidden>
+        <strong>SIMULATED RANSOMWARE INCIDENT</strong>
+        <p>Fictional ransom note: “Your office documents are locked. Contact the fictional sender to recover access.”</p>
+      </div>
+      <h3>Incident timeline</h3>
+      <ol id="incident-timeline"></ol>
+    </div>
   </section>
 
-  <!-- ===== 4. WHY IT MATTERS ===== -->
   <section class="sec" id="why">
-    <span class="sec-n">4. Why it matters</span>
-    <h2>Why does it matter?</h2>
-
-    <div class="todo-box">
-      <p><strong>Explain the damage in plain English.</strong> Add one real incident if you can (a source is preferred, not required).</p>
-      <ul>
-        <li>Search for real incidents where an uploaded web shell led to a server takeover. Link a source.</li>
-        <li>Explain the damage: running code on the server, stealing data, defacing the site.</li>
-      </ul>
-    </div>
-
-    <p class="todo-text">The damage, in two or three sentences.</p>
-    <div class="why">
-      <strong>Real incident:</strong>
-      <span class="todo-text">Name it, say what happened, and link the source in section 6. Only write what the source actually says.</span>
-    </div>
+    <h2>Why it matters</h2>
+    <p>Unsafe processing can expose data or disrupt a business. The separate processing step in this simulation shows how an accepted upload could become an incident if a second safeguard fails.</p>
   </section>
 
-  <!-- ===== 5. THE FIX ===== -->
   <section class="sec" id="fix">
-    <span class="sec-n">5. The fix</span>
-    <h2>The fixed code</h2>
-
-    <div class="todo-box">
-      <p><strong>Show the fixed code.</strong> Highlight the line that fixes it (class <code>ln good</code>).</p>
-      <ul>
-        <li>Allow only specific extensions (allowlist), not a blocklist.</li>
-        <li>Check the real file content (magic bytes), not the browser-supplied type.</li>
-        <li>Rename the file to a random name and store it where it cannot be executed.</li>
-      </ul>
-    </div>
-
-    <pre class="code"><span class="ln">// TODO: same code as section 2, with the fix applied</span>
-<span class="ln">// TODO</span>
-<span class="ln">// TODO</span>
-<span class="ln">// TODO</span>
-<span class="ln good">// TODO: the line that fixes the bug</span>
-<span class="ln">// TODO</span>
-<span class="ln">// TODO</span>
-<span class="ln">// TODO</span></pre>
-
-    <div class="why">
-      <strong>Why does the fix work?</strong>
-      <p class="todo-text">One or two sentences.</p>
-    </div>
-
-    <h3>Test the same payload again</h3>
-    <p>
-      <a href="#try">Go back to Try it</a>, switch to <strong>Fixed</strong>
-      and press the same payload. The result should now be blocked.
-    </p>
+    <h2>Fixed logic</h2>
+    <pre class="code" id="fixed-code"></pre>
+    <p>The portal allows PDF, PNG, and JPEG. A real service must validate file contents on the server and store uploads where execution is disabled.</p>
+    <p><a href="#try">Try the same sample in Fixed mode.</a></p>
   </section>
 
-  <!-- ===== 6. SOURCES ===== -->
   <section class="sec" id="sources">
-    <span class="sec-n">6. Sources</span>
     <h2>Sources</h2>
     <ul>
-      <li class="todo-text">TODO: add sources (MITRE CWE page, OWASP page, incident report). Preferred, not required.</li>
+      <li><a href="https://cwe.mitre.org/data/definitions/434.html">MITRE CWE-434</a></li>
+      <li><a href="https://top10.owasp.org/2025/A06_2025-Insecure_Design/">OWASP A06:2025 Insecure Design</a></li>
+      <li><a href="https://cheatsheetseries.owasp.org/cheatsheets/File_Upload_Cheat_Sheet.html">OWASP File Upload Cheat Sheet</a></li>
     </ul>
   </section>
 

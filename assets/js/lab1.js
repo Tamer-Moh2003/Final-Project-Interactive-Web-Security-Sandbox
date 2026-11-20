@@ -1,113 +1,190 @@
-/* =====================================================
-   LAB 1 — Unrestricted File Upload (CWE-434)
-   Owner: TODO
-
-   LOGIC CONTRACT (what this file must do)
-   -----------------------------------------------------
-   Scenario: an avatar-upload form on trusted-site.test.
-   NOTHING is really uploaded. Each payload is just a made-up
-   file description (name, declared type, first bytes).
-
-   Payloads (buttons in lab1.html -> data-payload):
-     legit  photo.png   type image/png      real content = PNG
-     php    shell.php   type application/x-php   real content = script
-     spoof  shell.php   type image/png (forged)  real content = script
-
-   VULNERABLE server (weak check, a realistic mistake):
-     - checks ONLY the type the browser declared (the client controls it)
-     - keeps the original file name, stores it in /uploads/ (web-accessible)
-     Expected:
-       legit -> accepted
-       php   -> rejected (the weak check catches the obvious one)
-       spoof -> ACCEPTED, stored as /uploads/shell.php, server could run it  <-- the bug
-
-   FIXED server (defence in depth):
-     1. extension must be on an allowlist (.png .jpg .jpeg .gif)
-     2. declared type must be an image type
-     3. real content (magic bytes) must match an image
-     4. rename to a random name, store outside the web root / no-execute
-     Expected:
-       legit -> accepted, renamed e.g. /uploads/a91f3c.png
-       php   -> blocked (extension)
-       spoof -> blocked (extension AND magic bytes mismatch)
-
-   RENDER (what the visitor sees, element ids are in lab1.html):
-     #up-filename #up-mime #up-magic         -> show the payload
-     #check-ext #check-mime #check-magic #check-rename -> setCheck(id, "pass"|"fail"|"skip")
-        ("skip" = this version never runs that check)
-     #up-stored #up-exec                      -> where it was stored, can the server run it?
-     setStatus("danger"|"success", "...")     -> big status line
-     #sim-explanation                         -> one sentence, plain English
-   ===================================================== */
-
-const PAYLOADS = {
-  legit: { filename: "photo.png", mime: "image/png",          magic: "89 50 4E 47 (PNG image)", realImage: true  },
-  php:   { filename: "shell.php", mime: "application/x-php",  magic: "3C 3F 70 68 (script text)", realImage: false },
-  spoof: { filename: "shell.php", mime: "image/png",          magic: "3C 3F 70 68 (script text)", realImage: false }
+const samples = {
+  executable: { name: "invoice.exe", format: "Executable" },
+  doubleExtension: { name: "invoice.pdf.exe", format: "Executable" },
+  mismatch: { name: "product-image.jpg", format: "Unknown" },
+  valid: { name: "catalog.pdf", format: "PDF" }
 };
 
-/* Marks one check row. state: "pass" | "fail" | "skip" | "waiting" */
-function setCheck(id, state) {
-  const el = $(id);
-  if (!el) return;
-  const labels = { pass: "passed", fail: "failed", skip: "not checked", waiting: "waiting" };
-  el.className = "pill" + (state === "waiting" ? "" : " " + state);
-  el.textContent = labels[state];
-}
+const formats = new Map([
+  ["pdf", "PDF"], ["png", "PNG"], ["jpg", "JPEG"], ["jpeg", "JPEG"]
+]);
 
-/* TODO (Vulnerable): return { blocked, message, data }.
-   Follow the VULNERABLE rules in the contract above. */
-function vulnerableVersion(payload) {
-  const file = PAYLOADS[payload];
-  return {
-    blocked: false,
-    resultClass: "todo",
-    message: "TODO: implement vulnerableVersion() in assets/js/lab1.js",
-    data: { file }
+function vulnerableVersion(sample) {
+  const checks = {
+    extension: "skip",
+    name: "skip",
+    format: "skip"
   };
+  const accepted = true;
+  return { accepted, checks };
 }
 
-/* TODO (Fixed): same shape, FIXED rules. The same payload must now be blocked. */
-function fixedVersion(payload) {
-  const file = PAYLOADS[payload];
-  return {
-    blocked: true,
-    resultClass: "todo",
-    message: "TODO: implement fixedVersion() in assets/js/lab1.js",
-    data: { file }
+function fixedVersion(sample) {
+  const [stem, ...extensions] = sample.name.toLowerCase().split(".");
+  const expected = formats.get(extensions.at(-1));
+  const checks = {
+    extension: Boolean(expected),
+    name: Boolean(stem) && extensions.length === 1,
+    format: Boolean(expected) && sample.format === expected
   };
+  const accepted = Object.values(checks).every(Boolean);
+  return { accepted, checks };
 }
 
-function resetSimulation() {
-  $("up-filename").textContent = "—";
-  $("up-mime").textContent = "—";
-  $("up-magic").textContent = "—";
-  ["check-ext", "check-mime", "check-magic", "check-rename"].forEach(id => setCheck(id, "waiting"));
-  $("up-stored").textContent = "—";
-  $("up-exec").textContent = "—";
-  setStatus("", "Waiting for a payload...");
-  $("sim-explanation").textContent = "Press a payload to see how the application handles it.";
+const officeFiles = [...$("office-files").children];
+const processingButton = $("simulate-processing");
+const timeline = $("incident-timeline");
+const warning = $("incident-warning");
+let lockTimer;
+let affected = 0;
+let selected = null;
+let mode = "vulnerable";
+
+function record(text) {
+  const event = document.createElement("li");
+  event.textContent = text;
+  timeline.append(event);
 }
 
-/* TODO: draw the outcome. The first three lines are done for you. */
-function updateSimulation(data, mode /*, payload, outcome */) {
-  const { file } = data;
-  $("up-filename").textContent = file.filename;
-  $("up-mime").textContent = file.mime;
-  $("up-magic").textContent = file.magic;
-
-  // TODO: setCheck(...) for each of the 4 rows (use "skip" for checks this version does not run)
-  // TODO: fill #up-stored and #up-exec
-  // TODO: setStatus("danger" | "success", "...") and #sim-explanation
+function updateCount() {
+  $("incident-count").textContent = affected + " of " + officeFiles.length + " fictional files locked";
 }
 
-initLab({
-  vulnerable: vulnerableVersion,
-  fixed: fixedVersion,
-  render: updateSimulation,
-  reset: resetSimulation,
-  descriptions: {
-    vulnerable: "Vulnerable: the server only trusts the file type sent by the browser.",
-    fixed: "Fixed: the server checks the extension, the real content, and renames the file."
+function restoreOffice() {
+  clearTimeout(lockTimer);
+  affected = 0;
+  for (const file of officeFiles) {
+    file.classList.remove("locked");
+    file.lastElementChild.textContent = "Available";
   }
+  warning.hidden = true;
+  processingButton.disabled = true;
+  timeline.replaceChildren();
+  updateCount();
+  record("Office files available.");
+}
+
+function showCheck(name, value) {
+  const pill = $("check-" + name);
+  const state = value === true ? "pass" : value === false ? "fail" : value;
+  const labels = { pass: "Passed", fail: "Failed", skip: "Skipped", waiting: "Waiting" };
+  pill.className = "pill " + state;
+  pill.textContent = labels[state];
+}
+
+function render() {
+  restoreOffice();
+  const sample = samples[selected];
+  $("up-filename").textContent = sample?.name ?? "—";
+  $("up-format").textContent = sample?.format ?? "—";
+
+  const fixed = mode === "fixed";
+  $("mode-description").textContent = fixed
+    ? "Fixed mode checks the extension, filename, and simulated content."
+    : "Vulnerable mode accepts sample records without validation.";
+  $("result").className = "result";
+  $("result").textContent = "";
+  if (!sample) {
+    for (const check of ["extension", "name", "format"]) showCheck(check, "waiting");
+    return;
+  }
+
+  const { accepted, checks } = (fixed ? fixedVersion : vulnerableVersion)(sample);
+  for (const [name, value] of Object.entries(checks)) showCheck(name, value);
+  const unsafeAccepted = accepted && !fixed && !fixedVersion(sample).accepted;
+  processingButton.disabled = !unsafeAccepted;
+
+  const reasons = [];
+  if (checks.name === false) reasons.push("The filename must have a single extension.");
+  if (checks.extension === false) reasons.push("The final extension is outside the allowlist.");
+  if (checks.extension && checks.format === false) reasons.push("The content does not match the expected format.");
+
+  const status = accepted ? "Upload accepted" : "Upload rejected";
+  $("result").classList.add(unsafeAccepted ? "hacked" : "blocked");
+  $("result").textContent = status + ". " + (
+    unsafeAccepted ? "Validation was skipped. You can simulate unsafe processing."
+      : accepted ? "The sample is an approved file format." : reasons.join(" ")
+  );
+  record(status + " · " + sample.name);
+}
+
+function showCode(id, handler, highlighted, style) {
+  for (const line of handler.toString().split("\n")) {
+    const row = document.createElement("span");
+    row.className = line.includes(highlighted) ? "ln " + style : "ln";
+    row.textContent = line;
+    $(id).append(row, "\n");
+  }
+}
+
+function lockNextFile() {
+  const file = officeFiles[affected];
+  file.classList.add("locked");
+  file.lastElementChild.textContent = "Locked";
+  affected += 1;
+  updateCount();
+  record("Locked · " + file.firstElementChild.textContent);
+  if (affected < officeFiles.length) {
+    lockTimer = setTimeout(lockNextFile, 420);
+  } else {
+    record("Simulated incident complete.");
+  }
+}
+
+processingButton.addEventListener("click", () => {
+  if (processingButton.disabled) return;
+  processingButton.disabled = true;
+  record("Simulated unsafe processing started.");
+  warning.hidden = false;
+  if (matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    // The same fictional state changes happen without a timed sequence.
+    for (const file of officeFiles) {
+      file.classList.add("locked");
+      file.lastElementChild.textContent = "Locked";
+    }
+    affected = officeFiles.length;
+    updateCount();
+    record("Simulated incident complete.");
+    return;
+  }
+  lockTimer = setTimeout(lockNextFile, 300);
 });
+
+const modeButtons = document.querySelectorAll("button[data-mode]");
+const sampleButtons = document.querySelectorAll("button[data-payload]");
+
+function updateButtons(buttons, key, selectedValue) {
+  for (const button of buttons) {
+    const active = button.dataset[key] === selectedValue;
+    button.classList.toggle("active", active);
+    button.setAttribute("aria-pressed", String(active));
+  }
+}
+
+for (const button of modeButtons) {
+  button.addEventListener("click", () => {
+    mode = button.dataset.mode;
+    document.body.dataset.mode = mode;
+    updateButtons(modeButtons, "mode", mode);
+    render();
+  });
+}
+
+for (const button of sampleButtons) {
+  button.addEventListener("click", () => {
+    selected = button.dataset.payload;
+    updateButtons(sampleButtons, "payload", selected);
+    render();
+  });
+}
+
+$("reset-incident").addEventListener("click", () => {
+  selected = null;
+  updateButtons(sampleButtons, "payload", selected);
+  render();
+});
+
+showCode("vulnerable-code", vulnerableVersion, "const accepted", "bad");
+showCode("fixed-code", fixedVersion, "const accepted", "good");
+updateButtons(modeButtons, "mode", mode);
+render();
