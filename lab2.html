@@ -1,61 +1,139 @@
+
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+
 <title>Lab 2 — Predictable Reset Tokens | Ghurir Sandbox</title>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap">
+
+<link
+  rel="stylesheet"
+  href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap"
+>
+
 <link rel="stylesheet" href="assets/css/style.css">
 <link rel="stylesheet" href="assets/css/lab2.css">
+
 </head>
 
 <body data-mode="vulnerable">
 
 <header class="nav">
+
   <div class="nav-in">
+
     <a class="brand" href="index.html" aria-label="Ghurir Sandbox home">
+
       <svg viewBox="0 0 32 32" fill="none" aria-hidden="true">
-        <rect x="2" y="2" width="28" height="28" rx="8" fill="var(--accent)"/>
-        <path d="M9 12l5 4-5 4M17 21h6" stroke="var(--accent-ink)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+        <rect
+          x="2"
+          y="2"
+          width="28"
+          height="28"
+          rx="8"
+          fill="var(--accent)"
+        />
+
+        <path
+          d="M9 12l5 4-5 4M17 21h6"
+          stroke="var(--accent-ink)"
+          stroke-width="2.4"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        />
       </svg>
+
       Ghurir Sandbox
+
     </a>
+
     <a class="link" href="lab1.html">Lab 1</a>
+
     <a class="link" href="lab2.html" aria-current="page">Lab 2</a>
+
     <a class="link" href="lab3.html">Lab 3</a>
-    <button type="button" id="theme-toggle" class="theme-toggle" aria-label="Switch colour theme">Dark mode</button>
+
+    <button
+      type="button"
+      id="theme-toggle"
+      class="theme-toggle"
+      aria-label="Switch colour theme"
+    >
+      Dark mode
+    </button>
+
   </div>
+
 </header>
 
+
 <main class="wrap">
+
 <div class="col">
 
+  <!-- LAB HEADER -->
+
   <div class="lab-head">
+
     <h1>Predictable Reset Tokens</h1>
-    <p class="lead">See how a password-reset token built from public information can be guessed, then compare it with a secure reset flow.</p>
+
+    <p class="lead">
+      See how a password-reset token built from public information
+      can be guessed, then compare it with a secure reset flow.
+    </p>
+
     <span class="tag">OWASP A07:2025</span>
     <span class="tag">CWE-640</span>
     <span class="tag">CWE-340</span>
     <span class="tag hard">Challenge</span>
+
   </div>
 
+
+  <!-- SECTION 1: WHAT IT IS -->
+
   <section class="sec" id="what">
+
     <span class="sec-n">1. What it is</span>
+
     <h2>When a reset token is predictable</h2>
-    <p>A reset token is a temporary secret that proves a password-reset request is authorized. If an application builds it from guessable data such as a user ID and date, someone who knows that pattern may be able to create a valid reset link and take over the account.</p>
+
+    <p>
+      A reset token is a temporary secret that proves a password-reset
+      request is authorized. If an application builds it from guessable
+      data such as a user ID and date, someone who knows that pattern
+      may be able to create a valid reset link and take over the account.
+    </p>
+
     <div class="why">
+
       <strong>Safe simulation:</strong>
-      This lab uses made-up accounts and tokens in your browser. It does not send email, contact a server, or change a real password.
+
+      This lab uses made-up accounts and tokens in your browser.
+      It does not send email, contact a server, or change a real password.
+
     </div>
+
   </section>
 
+
+  <!-- SECTION 2: THE VULNERABLE CODE -->
+
   <section class="sec" id="line">
+
     <span class="sec-n">2. The line</span>
+
     <h2>The predictable code</h2>
-    <p>The vulnerable example derives the token from values that are already known or easy to discover.</p>
+
+    <p>
+      The vulnerable example derives the token from values that are
+      already known or easy to discover.
+    </p>
 
     <pre class="code"><span class="ln">function createResetToken(user, day) {</span>
 <span class="ln">  // The account ID and date are not secret.</span>
@@ -66,91 +144,279 @@
 <span class="ln">}</span></pre>
 
     <div class="why">
+
       <strong>Why is this line dangerous?</strong>
-      Anyone who can infer the account ID and reset date can reproduce the same value. A reset link should depend on an unpredictable secret, not public account details.
+
+      Anyone who can infer the account ID and reset date can reproduce
+      the same value. A reset link should depend on an unpredictable
+      secret, not public account details.
+
     </div>
+
   </section>
+
+
+  <!-- SECTION 3: INTERACTIVE SIMULATION -->
 
   <section class="sec try" id="try">
+
     <span class="sec-n">3. Try it</span>
+
     <h2>Try to predict the reset link</h2>
 
+
     <h3>Step 1: choose a version</h3>
-    <div class="switch" role="group" aria-label="Code version">
-      <button type="button" data-mode="vulnerable" class="active" aria-pressed="true">Vulnerable</button>
-      <button type="button" data-mode="fixed" aria-pressed="false">Fixed</button>
+
+    <div
+      class="switch"
+      role="group"
+      aria-label="Code version"
+    >
+
+      <button
+        type="button"
+        data-mode="vulnerable"
+        class="active"
+        aria-pressed="true"
+      >
+        Vulnerable
+      </button>
+
+      <button
+        type="button"
+        data-mode="fixed"
+        aria-pressed="false"
+      >
+        Fixed
+      </button>
+
     </div>
+
     <p id="mode-description" class="why"></p>
 
+
     <h3>Step 2: choose a token attempt</h3>
+
     <div class="payloads">
-      <button type="button" class="btn" data-payload="predict" aria-pressed="false">Build token from the public user ID</button>
-      <button type="button" class="btn" data-payload="replay" aria-pressed="false">Reuse the sample token</button>
-      <button type="button" class="btn" data-payload="random" aria-pressed="false">Try an unrelated guess</button>
+
+      <button
+        type="button"
+        class="btn"
+        data-payload="predict"
+        aria-pressed="false"
+      >
+        Build token from the public user ID
+      </button>
+
+      <button
+        type="button"
+        class="btn"
+        data-payload="replay"
+        aria-pressed="false"
+      >
+        Reuse the sample token
+      </button>
+
+      <button
+        type="button"
+        class="btn"
+        data-payload="random"
+        aria-pressed="false"
+      >
+        Try an unrelated guess
+      </button>
+
     </div>
+
 
     <h3>Step 3: see what happens</h3>
-    <div class="simulation">
+
+    <div class="simulation" data-mode="vulnerable">
+
       <div class="sim-browser">
+
         <div class="sim-browser-top">
-          <span class="sim-dot"></span><span class="sim-dot"></span><span class="sim-dot"></span>
-          <div class="sim-address" id="sim-address">https://trusted-site.test/account/reset-password</div>
+
+          <span class="sim-dot"></span>
+          <span class="sim-dot"></span>
+          <span class="sim-dot"></span>
+
+          <div class="sim-address" id="sim-address">
+            https://trusted-site.test/account/reset-password
+          </div>
+
         </div>
+
+
         <div class="sim-browser-content">
+
           <div class="state-row">
+
             <div class="state-box">
+
               <small>Target account</small>
+
               <strong id="target-account" class="token-value">—</strong>
+
             </div>
+
+
             <div class="state-box">
+
               <small>Observed sample token</small>
+
               <strong id="observed-token" class="token-value">—</strong>
+
             </div>
+
+
             <div class="state-box">
+
               <small>Token design</small>
+
               <strong id="token-design" class="token-value">—</strong>
+
             </div>
+
           </div>
+
 
           <div class="state-row">
+
             <div class="state-box">
+
               <small>Submitted token</small>
+
               <strong id="submitted-token" class="token-value">—</strong>
+
             </div>
+
+
             <div class="state-box">
+
               <small>Reset outcome</small>
-              <strong id="reset-outcome" class="token-value">—</strong>
+
+              <strong
+                id="reset-outcome"
+                class="token-value"
+              >
+                —
+              </strong>
+
             </div>
+
           </div>
 
-          <div class="stepper" id="reset-steps" aria-label="Reset token checks">
-            <div class="step" data-step="observe">Observe sample<small>waiting</small></div>
-            <div class="step" data-step="predict">Build a candidate<small>waiting</small></div>
-            <div class="step" data-step="validate">Validate token<small id="validation-label">waiting</small></div>
+
+          <!-- SIMULATION STEPS -->
+
+          <div
+            class="stepper"
+            id="reset-steps"
+            aria-label="Reset token checks"
+          >
+
+            <div class="step" data-step="observe">
+
+              Observe sample
+
+              <small>waiting</small>
+
+            </div>
+
+
+            <div class="step" data-step="predict">
+
+              Build a candidate
+
+              <small>waiting</small>
+
+            </div>
+
+
+            <div class="step" data-step="validate">
+
+              Validate token
+
+              <small id="validation-label">waiting</small>
+
+            </div>
+
           </div>
 
-          <div class="sim-status" id="sim-status" aria-live="polite">Waiting for a payload...</div>
-          <p class="sim-explanation" id="sim-explanation">Choose a token attempt to see how the reset flow handles it.</p>
+
+          <!-- STATUS -->
+
+          <div
+            class="sim-status"
+            id="sim-status"
+            aria-live="polite"
+          >
+            Waiting for a payload...
+          </div>
+
+
+          <!-- EXPLANATION -->
+
+          <p
+            class="sim-explanation"
+            id="sim-explanation"
+          >
+            Choose a token attempt to see how the reset flow handles it.
+          </p>
+
         </div>
+
       </div>
+
     </div>
+
+
+    <!-- COMMON RESULT PANEL -->
 
     <div id="result" class="result" aria-live="polite"></div>
+
   </section>
+
+
+  <!-- SECTION 4: WHY IT MATTERS -->
 
   <section class="sec" id="why">
+
     <span class="sec-n">4. Why it matters</span>
+
     <h2>Why does it matter?</h2>
-    <p>A valid reset link can let its holder choose a new password without knowing the old one. If the token is predictable, an attacker may use the recovery flow to gain control of another account.</p>
+
+    <p>
+      A valid reset link can let its holder choose a new password
+      without knowing the old one. If the token is predictable,
+      an attacker may use the recovery flow to gain control
+      of another account.
+    </p>
+
     <div class="why">
-      The risk comes from treating a recoverable account link as a secret while generating it from information that is not secret.
+
+      The risk comes from treating a recoverable account link as a
+      secret while generating it from information that is not secret.
+
     </div>
+
   </section>
 
+
+  <!-- SECTION 5: THE FIX -->
+
   <section class="sec" id="fix">
+
     <span class="sec-n">5. The fix</span>
+
     <h2>Generate a strong, short-lived token</h2>
-    <p>Use a cryptographically secure random generator. Store a hash of the token, bind it to the correct account, expire it, and invalidate it after one successful use.</p>
+
+    <p>
+      Use a cryptographically secure random generator. Store a hash
+      of the token, bind it to the correct account, expire it,
+      and invalidate it after one successful use.
+    </p>
 
     <pre class="code"><span class="ln">function createResetToken(user) {</span>
 <span class="ln good">  const token = randomBytes(32).toString("base64url");</span>
@@ -162,41 +428,128 @@
 <span class="ln">}</span></pre>
 
     <div class="why">
+
       <strong>Why does the fix work?</strong>
-      The token no longer comes from a guessable formula. Expiration and single-use validation also limit how long a leaked or reused link can work.
+
+      The token no longer comes from a guessable formula.
+      Expiration and single-use validation also limit how long
+      a leaked or reused link can work.
+
     </div>
 
+
     <h3>Try the same attempt again</h3>
-    <p><a href="#try">Go back to Try it</a>, switch to <strong>Fixed</strong>, and try the same token attempt. The simulated reset should be refused.</p>
+
+    <p>
+      <a href="#try">Go back to Try it</a>,
+      switch to <strong>Fixed</strong>,
+      and try the same token attempt.
+      The simulated reset should be refused.
+    </p>
+
   </section>
+
+
+  <!-- SECTION 6: SOURCES -->
 
   <section class="sec" id="sources">
+
     <span class="sec-n">6. Sources</span>
+
     <h2>Sources</h2>
+
     <ul>
-      <li><a href="https://cheatsheetseries.owasp.org/cheatsheets/Forgot_Password_Cheat_Sheet.html" target="_blank" rel="noopener noreferrer">OWASP Forgot Password Cheat Sheet</a></li>
-      <li><a href="https://wstg.owasp.org/latest/4-Web_Application_Security_Testing/04-Authentication/09-Weak_Password_Change_or_Reset_Functionalities/" target="_blank" rel="noopener noreferrer">OWASP Web Security Testing Guide: Password Reset</a></li>
-      <li><a href="https://cwe.mitre.org/data/definitions/640.html" target="_blank" rel="noopener noreferrer">MITRE CWE-640: Weak Password Recovery Mechanism</a></li>
-      <li><a href="https://cwe.mitre.org/data/definitions/340.html" target="_blank" rel="noopener noreferrer">MITRE CWE-340: Generation of Predictable Numbers or Identifiers</a></li>
-      <li><a href="https://top10.owasp.org/2025/A07_2025-Authentication_Failures/" target="_blank" rel="noopener noreferrer">OWASP Top 10:2025 A07 Authentication Failures</a></li>
+
+      <li>
+        <a
+          href="https://cheatsheetseries.owasp.org/cheatsheets/Forgot_Password_Cheat_Sheet.html"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          OWASP Forgot Password Cheat Sheet
+        </a>
+      </li>
+
+      <li>
+        <a
+          href="https://wstg.owasp.org/latest/4-Web_Application_Security_Testing/04-Authentication/09-Weak_Password_Change_or_Reset_Functionalities/"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          OWASP Web Security Testing Guide: Password Reset
+        </a>
+      </li>
+
+      <li>
+        <a
+          href="https://cwe.mitre.org/data/definitions/640.html"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          MITRE CWE-640: Weak Password Recovery Mechanism
+        </a>
+      </li>
+
+      <li>
+        <a
+          href="https://cwe.mitre.org/data/definitions/340.html"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          MITRE CWE-340: Generation of Predictable Numbers or Identifiers
+        </a>
+      </li>
+
+      <li>
+        <a
+          href="https://top10.owasp.org/2025/A07_2025-Authentication_Failures/"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          OWASP Top 10:2025 A07 Authentication Failures
+        </a>
+      </li>
+
     </ul>
+
   </section>
 
+
+  <!-- LAB NAVIGATION -->
+
   <nav class="lab-pager" aria-label="Lab navigation">
+
     <a class="btn" href="lab1.html">← Lab 1</a>
+
     <a class="btn primary" href="lab3.html">Lab 3 →</a>
+
   </nav>
 
 </div>
+
 </main>
 
+
+<!-- FOOTER -->
+
 <footer>
-  <p>Every demonstration is a safe simulation. Nothing is sent and no real account is changed.</p>
-  <p>Ghurir Sandbox — Interactive Web Security Labs</p>
+
+  <p>
+    Every demonstration is a safe simulation.
+    Nothing is sent and no real account is changed.
+  </p>
+
+  <p>
+    Ghurir Sandbox — Interactive Web Security Labs
+  </p>
+
 </footer>
+
+
+<!-- SCRIPTS -->
 
 <script src="assets/js/common.js"></script>
 <script src="assets/js/lab2.js"></script>
+
 </body>
 </html>
-
