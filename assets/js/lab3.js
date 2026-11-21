@@ -1,107 +1,77 @@
-/* =====================================================
-   LAB 3 — Workflow Bypass (CWE-841)
-   Owner: TODO
-
-   LOGIC CONTRACT (what this file must do)
-   -----------------------------------------------------
-   Scenario: checkout with 4 steps: cart -> shipping -> payment -> confirm.
-   Each payload is a list of "requests" the visitor's browser sends,
-   in order. The server holds an order state.
-   Prices: 1 item = $10. No real data.
-
-   Valid transitions (the fixed server enforces this table):
-     cart     -> shipping
-     shipping -> payment
-     payment  -> confirm      (only if paid)
-     cart is LOCKED once state = payment or later
-
-   Payloads (data-payload in lab3.html):
-     normal     cart(1 item) -> shipping -> payment($10) -> confirm
-     skip       cart -> confirm                      (never paid)
-     backtrack  cart(1 item) -> shipping -> payment($10)
-                -> cart-edit (change to 5 items) -> confirm
-
-   VULNERABLE (each endpoint trusts that the previous step happened):
-     normal    -> order confirmed, paid $10, total $10
-     skip      -> order confirmed, paid $0                <-- payment bypassed
-     backtrack -> order confirmed, paid $10, total $50    <-- paid for 1, got 5
-
-   FIXED (server-side state machine):
-     normal    -> order confirmed (same as before, nothing breaks)
-     skip      -> blocked at confirm: "403: payment required (state = cart)"
-     backtrack -> blocked at cart-edit: "403: cart is locked after payment"
-
-   RENDER (ids are in lab3.html):
-     #wf-steps .step[data-step]  -> add class "visited" | "skipped" | "current"
-     #wf-request #wf-state #wf-paid #wf-total -> text for the last request
-     setStatus("danger"|"success", "...") and #sim-explanation
-   ===================================================== */
-
+﻿/* Lab 3: simulated checkout requests; no real payment or order is made. */
 const PRICE = 10;
-
 const PAYLOADS = {
-  normal:    { path: ["cart", "shipping", "payment", "confirm"], items: 1, editedItems: 1 },
-  skip:      { path: ["cart", "confirm"],                         items: 1, editedItems: 1 },
-  backtrack: { path: ["cart", "shipping", "payment", "cart-edit", "confirm"], items: 1, editedItems: 5 }
+  normal: ["cart", "shipping", "payment", "confirm"],
+  skip: ["cart", "confirm"],
+  backtrack: ["cart", "shipping", "payment", "cart-edit", "confirm"]
 };
 
-/* Pure function, no DOM. Walk the path and apply the rules of `mode`.
-   TODO: implement. Suggested return shape:
-     {
-       steps: [ { request: "confirm", stateBefore: "cart", allowed: true, reason: "" }, ... ],
-       orderCreated: boolean,
-       paid: number,        // dollars actually paid
-       total: number,       // dollars the order is worth
-       stoppedAt: string | null   // request name where the fixed server refused
-     }                                                                          */
-function simulate(payload, mode /* "vulnerable" | "fixed" */) {
-  return { steps: [], orderCreated: false, paid: 0, total: 0, stoppedAt: null };
+function simulate(path, mode) {
+  let state = "cart", total = PRICE, paid = 0, orderCreated = false, stoppedAt = null;
+  const steps = [];
+  for (const request of path) {
+    let reason = "";
+    if (mode === "fixed") {
+      if (request === "shipping" && state !== "cart") reason = "Invalid checkout state.";
+      if (request === "payment" && state !== "shipping") reason = "Shipping is required before payment.";
+      if (request === "cart-edit" && state !== "cart" && state !== "shipping") reason = "Cart is locked after payment.";
+      if (request === "confirm" && (state !== "payment" || paid !== total)) reason = "Payment for the current cart is required.";
+    }
+    steps.push({ request, allowed: !reason, reason });
+    if (reason) { stoppedAt = request; break; }
+    if (request === "shipping") state = "shipping";
+    if (request === "payment") { state = "payment"; paid = total; }
+    if (request === "cart-edit") total = 5 * PRICE;
+    if (request === "confirm") { state = "confirmed"; orderCreated = true; }
+  }
+  return { steps, state, total, paid, orderCreated, stoppedAt };
 }
 
-/* TODO (Vulnerable): call simulate(), return { blocked, message, data }.
-   blocked is false when the order was created without a full payment. */
-function vulnerableVersion(payload) {
-  return {
-    blocked: false,
-    resultClass: "todo",
-    message: "TODO: implement vulnerableVersion() in assets/js/lab3.js",
-    data: { payload, result: simulate(PAYLOADS[payload], "vulnerable") }
-  };
+function runPayload(payload, mode) {
+  const result = simulate(PAYLOADS[payload], mode);
+  const attack = result.orderCreated && result.paid < result.total;
+  let message;
+  if (result.stoppedAt) message = "Blocked: " + result.steps[result.steps.length - 1].reason;
+  else if (attack) message = `Attack succeeded: order confirmed for $${result.total} with only $${result.paid} paid.`;
+  else message = `Order confirmed normally: $${result.paid} paid for a $${result.total} order.`;
+  return { blocked: !attack, resultClass: attack ? "hacked" : "blocked", message, data: { result } };
 }
-
-/* TODO (Fixed): same, with the state machine from the contract. */
-function fixedVersion(payload) {
-  return {
-    blocked: true,
-    resultClass: "todo",
-    message: "TODO: implement fixedVersion() in assets/js/lab3.js",
-    data: { payload, result: simulate(PAYLOADS[payload], "fixed") }
-  };
-}
+function vulnerableVersion(payload) { return runPayload(payload, "vulnerable"); }
+function fixedVersion(payload) { return runPayload(payload, "fixed"); }
 
 function resetSimulation() {
-  document.querySelectorAll("#wf-steps .step").forEach(s => (s.className = "step"));
-  ["wf-request", "wf-state", "wf-paid", "wf-total"].forEach(id => ($(id).textContent = "—"));
+  document.querySelectorAll("#wf-steps .step").forEach(step => step.className = "step");
+  ["wf-request", "wf-state", "wf-paid", "wf-total"].forEach(id => $(id).textContent = "—");
   setStatus("", "Waiting for a payload...");
   $("sim-explanation").textContent = "Press a payload to see how the application handles it.";
 }
-
-/* TODO: draw the outcome from data.result.
-   - mark each visited step, mark steps that were jumped over as "skipped"
-   - fill #wf-request / #wf-state / #wf-paid / #wf-total
-   - setStatus("danger" | "success", "...") and #sim-explanation              */
-function updateSimulation(data, mode /*, payload, outcome */) {
+function updateSimulation(data) {
   resetSimulation();
-  // TODO
+  const result = data.result;
+  const visited = new Set(result.steps.filter(step => step.allowed).map(step => step.request));
+  const order = ["cart", "shipping", "payment", "confirm"];
+  const last = result.steps[result.steps.length - 1];
+  document.querySelectorAll("#wf-steps .step").forEach(element => {
+    const name = element.dataset.step;
+    if (visited.has(name)) element.classList.add("visited");
+    else if (visited.has("confirm") && order.indexOf(name) < 3) element.classList.add("skipped");
+    if (last.allowed && name === last.request) element.classList.add("current");
+  });
+  $("wf-request").textContent = "/" + last.request;
+  $("wf-state").textContent = result.state;
+  $("wf-paid").textContent = "$" + result.paid;
+  $("wf-total").textContent = "$" + result.total;
+  const attack = result.orderCreated && result.paid < result.total;
+  setStatus(attack ? "danger" : "success", result.stoppedAt ? "Request blocked" : attack ? "Order confirmed without full payment" : "Order confirmed");
+  $("sim-explanation").textContent = result.stoppedAt ? last.reason : attack ? "The server accepted an invalid checkout workflow." : "The checkout steps were completed in order.";
 }
-
 initLab({
   vulnerable: vulnerableVersion,
   fixed: fixedVersion,
   render: updateSimulation,
   reset: resetSimulation,
   descriptions: {
-    vulnerable: "Vulnerable: every step trusts that the previous step already happened.",
-    fixed: "Fixed: the server keeps the order state and allows only valid transitions."
+    vulnerable: "Vulnerable: endpoints trust that earlier steps were completed.",
+    fixed: "Fixed: the server checks the checkout state and locks the cart after payment."
   }
 });

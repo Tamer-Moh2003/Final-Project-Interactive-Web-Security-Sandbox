@@ -34,23 +34,12 @@
 <main class="wrap">
 <div class="col">
 
-  <!-- ===== TEMPLATE NOTICE: delete this whole box when the lab is finished ===== -->
-  <div class="todo-box">
-    <p><strong>Lab template.</strong> Delete every dashed box like this one when the lab is done.</p>
-    <ul>
-      <li>Fill the six sections below (max 400 words, not counting code).</li>
-      <li>Implement the lab logic in <code>assets/js/lab3.js</code> (the logic contract is at the top of that file).</li>
-      <li>The same payload must be blocked on the Fixed version.</li>
-    </ul>
-  </div>
-
   <div class="lab-head">
     <h1>Workflow Bypass</h1>
-    <p class="lead todo-text">One sentence that tells a beginner what they will see in this lab.</p>
-    <span class="tag">OWASP: TODO</span>
+    <p class="lead">Explore how skipping checkout steps can create an unpaid or underpaid order.</p>
+    <span class="tag">OWASP A04:2021</span>
     <span class="tag">CWE-841</span>
     <span class="tag">Medium</span>
-    <span class="tag">Owner: TODO</span>
   </div>
 
   <!-- ===== 1. WHAT IT IS ===== -->
@@ -58,18 +47,7 @@
     <span class="sec-n">1. What it is</span>
     <h2>What is Workflow Bypass?</h2>
 
-    <div class="todo-box">
-      <p><strong>Write max 3 sentences.</strong> Name the OWASP category and the CWE.</p>
-      <ul>
-        <li>Explain that the app expects steps in a fixed order but never checks that the order was followed.</li>
-        <li>Name the OWASP category (suggested: A04:2021 Insecure Design — verify it) and CWE-841.</li>
-        <li>Say what the user can skip or repeat: payment, approval, a limit.</li>
-      </ul>
-    </div>
-
-    <p class="todo-text">Sentence 1: what the bug is.</p>
-    <p class="todo-text">Sentence 2: how it happens.</p>
-    <p class="todo-text">Sentence 3: what the attacker gets.</p>
+    <p>Workflow bypass happens when an application lets requests skip or change required business steps. In this checkout, an attacker can confirm without paying or change the cart after payment. This is CWE-841 and relates to OWASP A04:2021 Insecure Design.</p>
   </section>
 
   <!-- ===== 2. THE LINE ===== -->
@@ -77,24 +55,13 @@
     <span class="sec-n">2. The line</span>
     <h2>The vulnerable code</h2>
 
-    <div class="todo-box">
-      <p><strong>Show 8–15 lines of realistic code.</strong> Highlight only the one line that causes the bug (class <code>ln bad</code>).</p>
-      <p>Suggested scenario: a checkout where <em>/confirm</em> creates the order without checking that payment happened.</p>
-    </div>
-
-    <pre class="code"><span class="ln">// TODO: line 1 of 8-15</span>
-<span class="ln">// TODO: line 2</span>
-<span class="ln">// TODO: line 3</span>
-<span class="ln">// TODO: line 4</span>
-<span class="ln bad">// TODO: the ONE line that causes the bug</span>
-<span class="ln">// TODO: line 6</span>
-<span class="ln">// TODO: line 7</span>
-<span class="ln">// TODO: line 8</span></pre>
-
-    <div class="why">
-      <strong>Why is this line dangerous?</strong>
-      <p class="todo-text">One or two sentences. Point at the highlighted line.</p>
-    </div>
+    <pre class="code"><span class="ln">app.post("/confirm", async (req, res) =&gt; {</span>
+<span class="ln">  const order = await findOrder(req.session.orderId);</span>
+<span class="ln">  if (!order) return res.sendStatus(404);</span>
+<span class="ln bad">  await createOrder(order); // no payment or state check</span>
+<span class="ln">  res.send("Order confirmed");</span>
+<span class="ln">});</span></pre>
+    <div class="why"><strong>Why is this line dangerous?</strong><p>The server confirms the order without verifying that the correct amount was paid for the current cart.</p></div>
   </section>
 
   <!-- ===== 3. TRY IT ===== -->
@@ -155,19 +122,7 @@
     <span class="sec-n">4. Why it matters</span>
     <h2>Why does it matter?</h2>
 
-    <div class="todo-box">
-      <p><strong>Explain the damage in plain English.</strong> Add one real incident if you can (a source is preferred, not required).</p>
-      <ul>
-        <li>Search for real incidents where a payment or approval step was skipped. Link a source.</li>
-        <li>Explain the damage: free orders, skipped approvals, broken business rules.</li>
-      </ul>
-    </div>
-
-    <p class="todo-text">The damage, in two or three sentences.</p>
-    <div class="why">
-      <strong>Real incident:</strong>
-      <span class="todo-text">Name it, say what happened, and link the source in section 6. Only write what the source actually says.</span>
-    </div>
+    <p>Skipping payment can produce free orders; changing a cart after payment can produce orders worth more than the amount paid. Similar missing checks can bypass approvals or other business rules.</p>
   </section>
 
   <!-- ===== 5. THE FIX ===== -->
@@ -175,34 +130,16 @@
     <span class="sec-n">5. The fix</span>
     <h2>The fixed code</h2>
 
-    <div class="todo-box">
-      <p><strong>Show the fixed code.</strong> Highlight the line that fixes it (class <code>ln good</code>).</p>
-      <ul>
-        <li>Keep the order state on the server and allow only valid transitions.</li>
-        <li>Reject any request whose current state does not allow it.</li>
-        <li>Lock the cart once payment starts.</li>
-      </ul>
-    </div>
-
-    <pre class="code"><span class="ln">// TODO: same code as section 2, with the fix applied</span>
-<span class="ln">// TODO</span>
-<span class="ln">// TODO</span>
-<span class="ln">// TODO</span>
-<span class="ln good">// TODO: the line that fixes the bug</span>
-<span class="ln">// TODO</span>
-<span class="ln">// TODO</span>
-<span class="ln">// TODO</span></pre>
-
-    <div class="why">
-      <strong>Why does the fix work?</strong>
-      <p class="todo-text">One or two sentences.</p>
-    </div>
-
-    <h3>Test the same payload again</h3>
-    <p>
-      <a href="#try">Go back to Try it</a>, switch to <strong>Fixed</strong>
-      and press the same payload. The result should now be blocked.
-    </p>
+    <pre class="code"><span class="ln">app.post("/confirm", async (req, res) =&gt; {</span>
+<span class="ln">  const order = await findOrder(req.session.orderId);</span>
+<span class="ln">  if (!order) return res.sendStatus(404);</span>
+<span class="ln good">  if (order.state !== "paid" || order.paid !== order.total)</span>
+<span class="ln">    return res.sendStatus(403);</span>
+<span class="ln">  await createOrder(order);</span>
+<span class="ln">  res.send("Order confirmed");</span>
+<span class="ln">});</span></pre>
+    <div class="why"><strong>Why does the fix work?</strong><p>The server validates the order state and amount before confirmation. It must also lock the cart once payment starts and enforce valid transitions on every endpoint.</p></div>
+    <p><a href="#try">Try the same payload again</a> in the Fixed version.</p>
   </section>
 
   <!-- ===== 6. SOURCES ===== -->
@@ -210,7 +147,8 @@
     <span class="sec-n">6. Sources</span>
     <h2>Sources</h2>
     <ul>
-      <li class="todo-text">TODO: add sources (MITRE CWE page, OWASP page, incident report). Preferred, not required.</li>
+      <li><a href="https://cwe.mitre.org/data/definitions/841.html">MITRE: CWE-841 ? Improper Enforcement of Behavioral Workflow</a></li>
+      <li><a href="https://owasp.org/Top10/2021/A04_2021-Insecure_Design/">OWASP Top 10: Insecure Design</a></li>
     </ul>
   </section>
 
