@@ -17,7 +17,7 @@ An interactive web security sandbox featuring three hands-on labs. Each lab demo
 ## Approved Vulnerabilities
 
 1. **Unrestricted File Upload (CWE-434)**
-2. **Race Condition (CWE-362)**
+2. **Predictable Reset Tokens (CWE-330)**
 3. **Workflow Bypass (CWE-841)**
 
 ## Technologies
